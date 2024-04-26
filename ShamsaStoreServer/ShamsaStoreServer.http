@@ -1,0 +1,6 @@
+@ShamsaStoreServer_HostAddress = http://localhost:5269
+
+GET {{ShamsaStoreServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
