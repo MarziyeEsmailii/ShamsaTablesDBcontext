@@ -16,7 +16,6 @@ namespace ShamsaStoreServer.Entities
 
         public string Password { get; set; }
 
-
         public List<Order> Orders { get; set; }
 
         public List<Cart> Carts { get; set; }

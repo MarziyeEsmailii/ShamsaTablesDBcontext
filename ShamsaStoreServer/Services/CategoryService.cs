@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ShamsaStoreServer.Data;
 using ShamsaStoreServer.Entities;
 using ShamsaStoreServer.ViewModels.Category;
@@ -34,36 +35,36 @@ namespace ShamsaStoreServer.Services
             return categories;
         }
 
-        public async Task AddAsync(CategoryCreateViewModel viewModel)
+        public async Task AddAsync(CategoryDto model)
         {
-            if (viewModel is null)
+            if (model is null)
                 throw new Exception("موارد ارسال شده خالی است");
 
             Category category = new Category();
 
-            category.Name = viewModel.Name;
+            category.Name = model.Name;
 
-            category.ImageFileName = viewModel.ImageFileName;
+            category.ImageFileName = model.ImageFileName;
 
             _applicationDbContext.Categories.Add(category);
 
             await _applicationDbContext.SaveChangesAsync();
         }
 
-        public async Task EditAsync(CategoryEditViewModel viewModel)
+        public async Task EditAsync( CategoryDto model)
         {
-            if (viewModel is null)
+            if (model is null)
                 throw new Exception("موارد ارسال شده نادرست است");
 
             Category? oldCategory =
-                await _applicationDbContext.Categories.FindAsync(viewModel.Id);
+                await _applicationDbContext.Categories.FindAsync(model.Id);
 
             if (oldCategory is null)
                 throw new Exception("دسته بندی یافت نشد");
 
-            oldCategory.Name = viewModel.Name;
+            oldCategory.Name = model.Name;
 
-            oldCategory.ImageFileName = viewModel.ImageFileName;
+            oldCategory.ImageFileName = model.ImageFileName;
 
             _applicationDbContext.Categories.Update(oldCategory);
 

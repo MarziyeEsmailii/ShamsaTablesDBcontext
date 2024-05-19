@@ -1,8 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using ShamsaStoreServer.Data;
 using ShamsaStoreServer.Entities;
 using ShamsaStoreServer.ViewModels.User;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ShamsaStoreServer.Services
@@ -16,22 +19,62 @@ namespace ShamsaStoreServer.Services
             _applicationDbContext = applicationDbContext;
         }
 
-        public async Task CreateAsync(UserCreateViewModel viewModel)
+        public async Task CreateAsync(UserDto model)
         {
-            if (viewModel is null)
+            if (model is null)
                 throw new Exception("موارد ارسال شده نادرست است");
 
             User user = new User();
 
-            user.FullName = viewModel.FullName;
+            user.FullName = model.FullName;
 
-            user.Email = viewModel.Email;
+            user.Email = model.Email;
 
-            user.Password = viewModel.Password;
+            user.Password = model.Password;
 
             await _applicationDbContext.Users.AddAsync(user);
 
             await _applicationDbContext.SaveChangesAsync();
+        }
+
+        public async Task<User?> GetAsync(int id)
+        {
+            return 
+                await _applicationDbContext.Users.FindAsync(id);
+        }
+
+        public async Task<List<User>> GetsAsync()
+        {
+            return
+                await _applicationDbContext.Users
+                .ToListAsync();
+        }
+
+        public async Task EditAsync(UserDto model)
+        {
+            User? oldUser =
+                await _applicationDbContext.Users.FindAsync(model.Id);
+
+            if (oldUser == null)
+                throw new Exception("این کاربر پیدا نشد");
+
+            oldUser.FullName = model.FullName;
+
+            oldUser.Email = model.Email;
+
+            _applicationDbContext.Users.Update(oldUser);
+
+            await _applicationDbContext.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var user =
+                await _applicationDbContext.Users.FindAsync(id);
+
+            _applicationDbContext.Users.Remove(user);
+
+           await _applicationDbContext.SaveChangesAsync();
         }
     }
 }

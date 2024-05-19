@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using ShamsaStoreServer.Data;
 using ShamsaStoreServer.Entities;
@@ -19,22 +20,22 @@ namespace ShamsaStoreServer.Services
             _applicationDbContext = applicationDbContext;
         }
 
-        public async Task AddAsync(ProductCreateViewModel viewModel)
+        public async Task AddAsync(ProductDto model)
         {
-            if (viewModel is null)
+            if (model is null)
                 throw new Exception("موارد ارسال شده خالی میباشد");
 
             Product product = new Product();
 
-            product.Name = viewModel.Name;
+            product.Name = model.Name;
 
-            product.Description = viewModel.Description;
+            product.Description = model.Description;
 
-            product.Price = viewModel.Price;
+            product.Price = model.Price;
 
-            product.Count = viewModel.Count;
+            product.Count = model.Count;
 
-            product.CategoryId = viewModel.CategoryId;
+            product.CategoryId = model.CategoryId;
 
             product.CreatedDateTime = DateTime.Now;
 
@@ -43,25 +44,25 @@ namespace ShamsaStoreServer.Services
             await _applicationDbContext.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(ProductEditViewModel viewModel)
+        public async Task UpdateAsync(ProductDto model)
         {
             Product? oldProduct =
-                await _applicationDbContext.Products.FindAsync(viewModel.Id);
+                await _applicationDbContext.Products.FindAsync(model.Id);
 
             if (oldProduct is null)
                 throw new Exception("محصولی یافت نشد");
 
-            oldProduct.Price = viewModel.Price;
+            oldProduct.Price = model.Price;
 
-            oldProduct.Name = viewModel.Name;
+            oldProduct.Name = model.Name;
 
-            oldProduct.Description = viewModel.Description;
+            oldProduct.Description = model.Description;
 
-            oldProduct.ImageFileName = viewModel.ImageFileName;
+            oldProduct.ImageFileName = model.ImageFileName;
 
-            oldProduct.Count = viewModel.Count;
+            oldProduct.Count = model.Count;
 
-            oldProduct.CategoryId = viewModel.CategoryId;
+            oldProduct.CategoryId = model.CategoryId;
 
             _applicationDbContext.Products.Update(oldProduct);
 
@@ -70,7 +71,7 @@ namespace ShamsaStoreServer.Services
 
         public async Task DeleteAsync(int productId)
         {
-            Product product = 
+            Product product =
                 await _applicationDbContext.Products.FindAsync(productId);
 
             _applicationDbContext.Products.Remove(product);
@@ -82,7 +83,7 @@ namespace ShamsaStoreServer.Services
         {
             Product? product =
                 _applicationDbContext.Products.Find(id);
-            
+
             return product;
         }
 
@@ -104,11 +105,11 @@ namespace ShamsaStoreServer.Services
 
         public async Task<List<Product>> GetsByCategoryAsync(int categoryId)
         {
-            List<Product> products = 
+            List<Product> products =
                 await _applicationDbContext
                 .Products
                 .Where(product => product.CategoryId == categoryId).ToListAsync();
-            
+
             return products;
         }
     }

@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ShamsaStoreServer.Data;
 using ShamsaStoreServer.Entities;
 using ShamsaStoreServer.ViewModels.Order;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ShamsaStoreServer.Services
@@ -17,47 +19,51 @@ namespace ShamsaStoreServer.Services
             _applicationDbContext = applicationDbContext;
         }
 
-        public async Task CreateAsync(OrderCreateViewModel viewModel)
+        public async Task CreateAsync(OrderDto model)
         {
-            if (viewModel is null)
+            if (model is null)
                 throw new Exception("موارد ارسال شده نادرست است");
 
             Order order = new Order();
 
-            order.ProductId = viewModel.ProductId;
+            order.ProductId = model.ProductId;
 
-            order.UserId = viewModel.UserId;
+            order.UserId = model.UserId;
 
-            order.Price = viewModel.Price;
+            order.Price = model.Price;
+
+            order.Count = model.Count;
 
             await _applicationDbContext.Orders.AddAsync(order);
 
             await _applicationDbContext.SaveChangesAsync();
         }
 
-        public async Task EditAsync(OrderEditViewModel viewModel)
+        public async Task EditAsync(OrderDto model)
         {
-            if (viewModel is null)
+            if (model is null)
                 throw new Exception("موارد ارسال شده نادرست است");
 
             Order? order =
-                await _applicationDbContext.Orders.FindAsync(viewModel.Id);
+                await _applicationDbContext.Orders.FindAsync(model.Id);
 
             if (order is null)
                 throw new Exception("سفارشی یافت نشد");
 
-            order.Price = viewModel.Price;
+            order.Price = model.Price;
 
-            order.ProductId = viewModel.ProductId;
+            order.ProductId = model.ProductId;
 
-            order.UserId = viewModel.UserId;
+            order.UserId = model.UserId;
+
+            order.Count = model.Count;
 
             _applicationDbContext.Orders.Update(order);
 
             await _applicationDbContext.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(long orderId)
+        public async Task DeleteAsync(int orderId)
         {
             if (orderId < 0)
                 throw new Exception("موارد ارسال شده نادرست است");
@@ -102,5 +108,23 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
+
+        public async Task<Order?> GetByProductIdAsync(int productId)
+        {
+            return
+                await _applicationDbContext.Orders
+                .Where(x => x.ProductId == productId)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Order?> GetByUserIdAsync(int userId)
+        {
+            return
+                await _applicationDbContext.Orders
+                .Where(x => x.UserId == userId)
+                .FirstOrDefaultAsync();
+        }
+
+
     }
 }

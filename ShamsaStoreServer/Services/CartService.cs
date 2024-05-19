@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ShamsaStoreServer.Services
 {
@@ -18,40 +19,40 @@ namespace ShamsaStoreServer.Services
             _applicationDbContext = applicationDbContext;
         }
 
-        public async Task CreateAsync(CartCreateViewModel viewModel)
+        public async Task CreateAsync(CartDto model)
         {
-            if (viewModel is null)
+            if (model is null)
                 throw new Exception("موارد ارسال شده نادرست است");
 
             Cart cart = new Cart();
 
-            cart.ProductId = viewModel.ProductId;
+            cart.ProductId = model.ProductId;
 
-            cart.UserId = viewModel.UserId;
+            cart.UserId = model.UserId;
 
-            cart.Count = viewModel.Count;
+            cart.Count = model.Count;
 
             await _applicationDbContext.Carts.AddAsync(cart);
 
             await _applicationDbContext.SaveChangesAsync();
         }
 
-        public async Task EditAsync(CartEditViewModel viewModel)
+        public async Task EditAsync(CartDto model)
         {
-            if (viewModel is null)
+            if (model is null)
                 throw new Exception("موارد ارسال شده نادرست است");
 
             Cart? cart =
-                await _applicationDbContext.Carts.FindAsync(viewModel.Id);
+                await _applicationDbContext.Carts.FindAsync(model.Id);
 
             if (cart is null)
                 throw new Exception("سبد خریدی یافت نشد");
 
-            cart.Count = viewModel.Count;
+            cart.Count = model.Count;
 
-            cart.ProductId = viewModel.ProductId;
+            cart.ProductId = model.ProductId;
 
-            cart.UserId = viewModel.UserId;
+            cart.UserId = model.UserId;
 
             _applicationDbContext.Carts.Update(cart);
 
@@ -104,6 +105,12 @@ namespace ShamsaStoreServer.Services
                 .ToListAsync();
 
             return result;
+        }
+
+        public async Task<List<Cart>> GetByProductIdAsync(int productId)
+        {
+            return
+              await _applicationDbContext.Carts.Where(x => x.ProductId == productId).ToListAsync();
         }
 
     }

@@ -37,7 +37,7 @@ namespace ShamsaStoreServer.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody]CategoryCreateViewModel viewModel)
+        public async Task<IActionResult> Add([FromBody]CategoryDto viewModel)
         {
             await _categoryService.AddAsync(viewModel);
 
@@ -45,7 +45,7 @@ namespace ShamsaStoreServer.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Edit([FromBody] CategoryEditViewModel viewModel)
+        public async Task<IActionResult> Edit([FromBody] CategoryDto viewModel)
         {
             await _categoryService.EditAsync(viewModel);
 

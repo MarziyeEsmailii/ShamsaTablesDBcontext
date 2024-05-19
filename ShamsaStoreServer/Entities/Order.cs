@@ -13,6 +13,8 @@ namespace ShamsaStoreServer.Entities
 
         public int Price { get; set; }
 
+        public int Count { get; set; }
+
         public DateTime DateTimeCreated { get; set; }
 
         [ForeignKey("User")]

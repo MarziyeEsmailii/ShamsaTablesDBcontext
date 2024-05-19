@@ -18,9 +18,33 @@ namespace ShamsaStoreServer.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(UserCreateViewModel viewModel)
+        public async Task<IActionResult> Create(UserDto viewModel)
         {
             await _userService.CreateAsync(viewModel);
+
+            return Ok();
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Edit([FromBody] UserDto model)
+        {
+            await _userService.EditAsync(model);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Gets()
+        {
+            var result = await _userService.GetsAsync();
+
+            return Ok(result);
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _userService.DeleteAsync(id);
 
             return Ok();
         }
