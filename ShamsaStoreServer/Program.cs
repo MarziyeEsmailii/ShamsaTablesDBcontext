@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ShamsaStoreServer.Data;
 using ShamsaStoreServer.Services;
+using Microsoft.AspNetCore.Identity;
+using ShamsaStoreServer.Entities;
 
 namespace ShamsaStoreServer
 {
@@ -15,15 +17,36 @@ namespace ShamsaStoreServer
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Add services to the container.
 
             builder.Services.AddControllers();
-
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
+
             builder.Services.AddSwaggerGen();
 
+            /// <summary>
+            /// Add DbContext and Config Idnetity
+            /// </summary>
             builder.Services.AddDbContext<ApplicationDbContext>
                 (options => options
                 .UseSqlServer(builder.Configuration.GetConnectionString("WebApiDatabase")));
+
+            builder.Services.AddIdentityApiEndpoints<AuthenctiationUser>(options =>
+            {
+                options.Password.RequireNonAlphanumeric = false;
+
+                options.Password.RequireLowercase = false;
+
+                options.Password.RequireUppercase = false;
+
+                options.Password.RequireDigit = false;
+
+                options.Password.RequiredLength = 6;
+
+            })
+               .AddRoles<IdentityRole>()
+                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             builder.Services.AddScoped<ProductService>();
 
@@ -49,8 +72,10 @@ namespace ShamsaStoreServer
             });
 
 
+
             var app = builder.Build();
 
+            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
