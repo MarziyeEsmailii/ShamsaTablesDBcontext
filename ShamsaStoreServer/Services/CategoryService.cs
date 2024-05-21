@@ -18,6 +18,7 @@ namespace ShamsaStoreServer.Services
             _applicationDbContext = applicationDbContext;
         }
 
+        #region واکشی اطلاعات جدول دسته بندی با توجه به آیدی
         public async Task<Category?> GetAsync(int id)
         {
             Category? result =
@@ -26,6 +27,9 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
+        #endregion
+
+        #region واکشی اطلاعات کلی جدول
         public async Task<List<Category>> GetsAsync()
         {
             List<Category> categories =
@@ -34,7 +38,9 @@ namespace ShamsaStoreServer.Services
 
             return categories;
         }
+        #endregion
 
+        #region اضافه کردن دسته بندی جدید و دریافتی از مدل
         public async Task AddAsync(CategoryDto model)
         {
             if (model is null)
@@ -43,14 +49,15 @@ namespace ShamsaStoreServer.Services
             Category category = new Category();
 
             category.Name = model.Name;
-
             category.ImageFileName = model.ImageFileName;
 
             _applicationDbContext.Categories.Add(category);
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region بروز رسانی یا همان ویرایش جدول دساه بندی با توجه به دریافتی از مدل
         public async Task EditAsync( CategoryDto model)
         {
             if (model is null)
@@ -65,12 +72,13 @@ namespace ShamsaStoreServer.Services
             oldCategory.Name = model.Name;
 
             oldCategory.ImageFileName = model.ImageFileName;
-
             _applicationDbContext.Categories.Update(oldCategory);
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region حذف دسته بندی با توجه به ایدی
         public async Task DeleteAsync(int id)
         {
             Category? category =
@@ -83,5 +91,6 @@ namespace ShamsaStoreServer.Services
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
     }
 }

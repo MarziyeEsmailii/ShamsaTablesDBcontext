@@ -19,6 +19,7 @@ namespace ShamsaStoreServer.Services
             _applicationDbContext = applicationDbContext;
         }
 
+        #region ایجاد جدول کاربران با استفاده از مدل دریافتی
         public async Task CreateAsync(UserDto model)
         {
             if (model is null)
@@ -27,29 +28,34 @@ namespace ShamsaStoreServer.Services
             User user = new User();
 
             user.FullName = model.FullName;
-
             user.Email = model.Email;
-
             user.Password = model.Password;
 
             await _applicationDbContext.Users.AddAsync(user);
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region واکشی اطلاعات با توجه به ایدی 
         public async Task<User?> GetAsync(int id)
         {
             return 
                 await _applicationDbContext.Users.FindAsync(id);
         }
+        #endregion
 
+
+        #region واکشی اطلاعات کلی جدول کاربران
         public async Task<List<User>> GetsAsync()
         {
             return
                 await _applicationDbContext.Users
                 .ToListAsync();
         }
+        #endregion
 
+        #region ویرایش اطلاعات یک کاربر موجود با استفاده از اطلاعات دریافتی از مدل
         public async Task EditAsync(UserDto model)
         {
             User? oldUser =
@@ -59,14 +65,15 @@ namespace ShamsaStoreServer.Services
                 throw new Exception("این کاربر پیدا نشد");
 
             oldUser.FullName = model.FullName;
-
             oldUser.Email = model.Email;
 
             _applicationDbContext.Users.Update(oldUser);
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region حذف کابر با توجه به آیدی دریافت شده
         public async Task DeleteAsync(int id)
         {
             var user =
@@ -76,5 +83,6 @@ namespace ShamsaStoreServer.Services
 
            await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
     }
 }

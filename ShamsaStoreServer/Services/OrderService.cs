@@ -19,6 +19,7 @@ namespace ShamsaStoreServer.Services
             _applicationDbContext = applicationDbContext;
         }
 
+        #region سفارش جدید را بر اساس مدل دریافتی ایجاد می‌کند
         public async Task CreateAsync(OrderDto model)
         {
             if (model is null)
@@ -27,18 +28,17 @@ namespace ShamsaStoreServer.Services
             Order order = new Order();
 
             order.ProductId = model.ProductId;
-
             order.UserId = model.UserId;
-
             order.Price = model.Price;
-
             order.Count = model.Count;
 
             await _applicationDbContext.Orders.AddAsync(order);
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region ویرایش جدول بر اساس اطلاعات دریافتی از مدل
         public async Task EditAsync(OrderDto model)
         {
             if (model is null)
@@ -51,18 +51,17 @@ namespace ShamsaStoreServer.Services
                 throw new Exception("سفارشی یافت نشد");
 
             order.Price = model.Price;
-
             order.ProductId = model.ProductId;
-
             order.UserId = model.UserId;
-
             order.Count = model.Count;
 
             _applicationDbContext.Orders.Update(order);
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region حذف رکورد بر اساس آیدی
         public async Task DeleteAsync(int orderId)
         {
             if (orderId < 0)
@@ -78,7 +77,9 @@ namespace ShamsaStoreServer.Services
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region  واکشی اطلاعات سافرش بر اساس آیدی
         public Order? Get(int orderId)
         {
             if (orderId < 0)
@@ -89,7 +90,9 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
+        #endregion
 
+        #region واکشی اطلاعات کل جدول بر اساس آیدی
         public async Task<Order?> GetAsync(int orderId)
         {
             if (orderId < 0)
@@ -100,7 +103,9 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
+        #endregion
 
+        #region واکشی کل جدول سفارشات
         public async Task<List<Order>> GetsAsync()
         {
             List<Order> result =
@@ -108,7 +113,9 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
+        #endregion
 
+        #region واکشی اطلاعات جدول سفارشات بر اساس آیدی محصول
         public async Task<Order?> GetByProductIdAsync(int productId)
         {
             return
@@ -116,7 +123,9 @@ namespace ShamsaStoreServer.Services
                 .Where(x => x.ProductId == productId)
                 .FirstOrDefaultAsync();
         }
+        #endregion
 
+        #region واکشی اطلاعات جدول سفارشات بر اساس آیدی کاربر
         public async Task<Order?> GetByUserIdAsync(int userId)
         {
             return
@@ -124,7 +133,7 @@ namespace ShamsaStoreServer.Services
                 .Where(x => x.UserId == userId)
                 .FirstOrDefaultAsync();
         }
-
+        #endregion
 
     }
 }
