@@ -34,21 +34,25 @@ namespace ShamsaStoreServer.Data
 
             var hasher = new PasswordHasher<IdentityUser>();
 
+
+            //افزودن داده‌های اولیه به جدول احراز هویت در پایگاه داده استفاده می‌شود.
             builder.Entity<AuthenctiationUser>().HasData(
                  new AuthenctiationUser
                  {
                      Id = ADMIN_ID,
-                     UserName = "Erfan",
+                     UserName = "MarziyeIt",
                      NormalizedUserName = "YOUR_PHONE",
                      Email = "YOUR_EMAIL",
                      NormalizedEmail = "YOUR_EMAIL",
                      EmailConfirmed = true,
                      PhoneNumberConfirmed = true,
+                     //پارامتر اول نشان می‌دهد که این عملیات برای کاربر جدید انجام می‌شود
                      PasswordHash = hasher.HashPassword(null, "Admin123456@"),
                      SecurityStamp = string.Empty,
                      FullName = "YOUR_FULL_NAME"
                  });
 
+            //تعریف رابطه بین کاربر و نقش در سیستم احراز هویت
             builder.Entity<IdentityUserRole<string>>().HasData(
                 new IdentityUserRole<string>
                 {
