@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ShamsaStoreServer.Data;
 using ShamsaStoreServer.Entities;
 using ShamsaStoreServer.ViewModels.Order;
@@ -135,5 +134,55 @@ namespace ShamsaStoreServer.Services
         }
         #endregion
 
+        public async Task AddRangeAsync(List<OrderDto> models)
+        {
+            var orders =
+                models.Select(current => new Order
+                {
+                    ProductId = current.ProductId,
+                    Count = current.Count,
+                    Price = current.Price,
+                    DateTimeCreated = DateTime.Now,
+                    UserId = current.UserId,
+                })
+                .ToList();
+
+            await _applicationDbContext.AddRangeAsync(orders);
+
+            await _applicationDbContext.SaveChangesAsync();
+        }
+
+        public async Task<List<OrderReportResponseDto>> OrdersReportByProductAsync(OrderReportRequestDto model)
+        {
+            var ordersQuery =
+                 _applicationDbContext.Orders
+                .Where(current => model == null || current.DateTimeCreated >= model.FromDate)
+                .Where(current => model == null || current.DateTimeCreated <= model.ToDate)
+                .GroupBy(current => current.ProductId)
+                .Select(current => new
+                {
+                    ProductId = current.Key,
+                    TotalSum = current.Sum(current => current.Price),
+                });
+
+            var productsQuery = from product in _applicationDbContext.Products
+                                from order in ordersQuery.Where(a => a.ProductId == product.Id).DefaultIfEmpty()
+                                select new OrderReportResponseDto
+                                {
+                                    ProductName = product.Name,
+                                    ProductCategoryName = product.Category.Name,
+                                    ProductId = product.Id,
+                                    TotalSum = (int?)order.TotalSum
+                                };
+
+            productsQuery =
+                productsQuery
+                .Skip(model.PageNo * model.PageSize)
+                .Take(model.PageSize);
+
+            var result = await productsQuery.ToListAsync();
+
+            return result;
+        }
     }
 }

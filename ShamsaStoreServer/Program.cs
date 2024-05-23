@@ -58,6 +58,7 @@ namespace ShamsaStoreServer
 
             builder.Services.AddScoped<CartService>();
 
+            builder.Services.AddScoped<CartService>();
 
             builder.Services.AddCors(options =>
             {

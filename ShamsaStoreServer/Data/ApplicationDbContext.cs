@@ -32,7 +32,7 @@ namespace ShamsaStoreServer.Data
                 new IdentityRole { Id = ADMIN_ROLE_ID, Name = "Admin", NormalizedName = "Admin".ToUpper() },
                 new IdentityRole { Name = "User", NormalizedName = "User".ToUpper() });
 
-            var hasher = new PasswordHasher<IdentityUser>();
+            var hasher = new PasswordHasher<IdentityUser>(); // Hash 
 
 
             //افزودن داده‌های اولیه به جدول احراز هویت در پایگاه داده استفاده می‌شود.
@@ -41,7 +41,7 @@ namespace ShamsaStoreServer.Data
                  {
                      Id = ADMIN_ID,
                      UserName = "MarziyeIt",
-                     NormalizedUserName = "YOUR_PHONE",
+                     NormalizedUserName = "YOUR_NAME",
                      Email = "YOUR_EMAIL",
                      NormalizedEmail = "YOUR_EMAIL",
                      EmailConfirmed = true,

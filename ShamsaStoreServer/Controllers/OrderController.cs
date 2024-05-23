@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using ShamsaStoreServer.Entities;
 using ShamsaStoreServer.Services;
 using ShamsaStoreServer.ViewModels.Order;
 using System.Collections.Generic;
@@ -58,6 +56,22 @@ namespace ShamsaStoreServer.Controllers
             await _orderService.DeleteAsync(orderId);
 
             return Ok();
+        }
+        [HttpPost("AddRange")]
+        public async Task<IActionResult> AddRange(List<OrderDto> orders)
+        {
+            await _orderService.AddRangeAsync(orders);
+
+            return Ok();
+        }
+
+        [HttpGet("OrdersReportByProduct")]
+        public async Task<IActionResult> OrdersReportByProduct([FromQuery] OrderReportRequestDto viewModel)
+        {
+            var result =
+                await _orderService.OrdersReportByProductAsync(viewModel);
+
+            return Ok(result);
         }
     }
 }

@@ -43,12 +43,17 @@ namespace ShamsaStoreServer.Controllers
                 return BadRequest("با این ایمیل قبلا ثبت نام شده است");
             }
 
+            var hasher =
+            new PasswordHasher<IdentityUser>();
+
             // ایجاد یک کاربر جدید با اطلاعات دریافتی
             user = new AuthenctiationUser
             {
                 Email = model.Email,
                 PhoneNumber = model.Phone,
                 FullName = model.FullName,
+                UserName = model.Email,
+                PasswordHash = hasher.HashPassword(null, model.Password),
             };
 
             // تلاش برای ایجاد کاربر در سیستم
@@ -82,9 +87,9 @@ namespace ShamsaStoreServer.Controllers
         /// <param name="useCookies">بررسی استفاده از کوکی ها.</param>
         /// <param name="useSessionCookies">بررسی استفاده از کوکی های جلسه.</param>
         /// <returns>یک پاسخ HTTP که شامل نتایج مختلفی می‌باشد.</returns>
-        public async Task<Results<Ok<AccessTokenResponse>,
-            EmptyHttpResult, ProblemHttpResult>> Login([FromBody] LoginDto model,
-            [FromQuery] bool? useCookies,
+        [HttpPost("Login")]
+        public async Task<Results<Ok<AccessTokenResponse>, EmptyHttpResult, ProblemHttpResult>> Login([FromBody] LoginDto model,
+           [FromQuery] bool? useCookies,
             [FromQuery] bool? useSessionCookies)
         {
             // تعیین استفاده از کوکی یا بئره
@@ -100,7 +105,8 @@ namespace ShamsaStoreServer.Controllers
 
 
             // جستجوی کاربر با ایمیل وارد شده
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user =
+            await _userManager.FindByEmailAsync(model.Email);
 
 
             // بررسی اینکه آیا کاربر وجود دارد یا خیر
@@ -112,7 +118,8 @@ namespace ShamsaStoreServer.Controllers
 
 
             // تلاش برای ورود کاربر با استفاده از رمز عبور
-            var result = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent, lockoutOnFailure: true);
+            var result =
+          await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent, lockoutOnFailure: true);
 
             // بررسی نتیجه ورود کاربر
             if (!result.Succeeded)
