@@ -90,5 +90,26 @@ namespace ShamsaStoreServer.Controllers
                 :
                 BadRequest("نام کالا خود را وارد کنید");
         }
+        [HttpGet("OrdersWithOrdering")]
+        public async Task<IActionResult> OrdersWithOrdering([FromQuery] bool orderbyDescending, [FromQuery] int userId)
+        {
+            return Ok(await _orderService.GetOrdersWithOrdering(orderbyDescending, userId));
+        }
+
+        // برای فهمیدن که چند عدد سفارش برای کاربر وجود داره
+
+        [HttpGet("OrderCount")]
+        public async Task<IActionResult> OrderCount([FromQuery] int userId)
+        {
+            return Ok(await _orderService.GetOrderCount(userId));
+        }
+
+        // تعداد سفارش های خریداری شده با آیدی محصول یا پروداکت
+
+        [HttpGet("OrderCountByProductId")]
+        public async Task<IActionResult> OrderCountByProductId([FromQuery] int productId)
+        {
+            return Ok(await _orderService.GetProductOrder(productId));
+        }
     }
 }

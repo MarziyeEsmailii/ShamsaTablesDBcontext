@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Dtos.Search;
+using ShamsaStoreServer.ViewModels.Product;
 
 namespace ShamsaStoreServer.Services
 {
@@ -150,6 +151,54 @@ namespace ShamsaStoreServer.Services
                     UserId = current.UserId,
                 })
                 .ToListAsync();
+        }
+        public async Task<int> GetCartCount(int userId)
+        {
+            return await _applicationDbContext.Carts
+                .Where(current => current.UserId == userId)
+                .CountAsync();
+        }
+
+        public async Task<List<CartDto>> GetCartsWithOrdering(bool orderbyDescending, int userId)
+        {
+            var anyUser =
+                await _applicationDbContext.Carts
+                .Where(current => current.UserId == userId)
+                .AnyAsync();
+
+            if (!anyUser)
+            {
+                return new List<CartDto>();
+            }
+
+            if (orderbyDescending)
+            {
+                return await _applicationDbContext.Carts
+                    .Include(current => current.Id)
+                    .Where(current => current.UserId == userId)
+                    .Select(current => new CartDto
+                    {
+                        Id = current.Id,
+                        Count = current.Count,
+                        ProductName = current.Product.Name,
+                        ProductId = current.ProductId,
+                        UserId = current.UserId,
+                    })
+                    .ToListAsync();
+            }
+
+            return await _applicationDbContext.Carts
+                    .Include(current => current.Id)
+                    .Where(current => current.UserId == userId)
+                    .Select(current => new CartDto
+                    {
+                        Id = current.Id,
+                        Count = current.Count,
+                        ProductName = current.Product.Name,
+                        ProductId = current.ProductId,
+                        UserId = current.UserId,
+                    })
+                    .ToListAsync();
         }
     }
 }

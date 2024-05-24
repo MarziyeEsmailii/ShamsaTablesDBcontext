@@ -5,6 +5,7 @@ using ShamsaStoreServer.Data;
 using ShamsaStoreServer.Entities;
 using ShamsaStoreServer.ViewModels.Product;
 using System;
+using ShamsaStoreServer.ViewModels.Order;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,6 +35,7 @@ namespace ShamsaStoreServer.Services
             product.Count = model.Count;
             product.CategoryId = model.CategoryId;
             product.CreatedDateTime = DateTime.Now;
+            product.ImageFileName = model.ImageFileName;
 
             await _applicationDbContext.Products.AddAsync(product);
 
@@ -56,6 +58,7 @@ namespace ShamsaStoreServer.Services
             oldProduct.ImageFileName = model.ImageFileName;
             oldProduct.Count = model.Count;
             oldProduct.CategoryId = model.CategoryId;
+            oldProduct.ImageFileName = model.ImageFileName;
 
             _applicationDbContext.Products.Update(oldProduct);
 
@@ -86,11 +89,22 @@ namespace ShamsaStoreServer.Services
         #endregion
 
         #region واکشی اطلاعات غیر هم زمان یک محصول خاص با توجه به آیدی
-        public async Task<Product?> GetAsync(int productId)
+        public async Task<ProductDto?> GetAsync(int productId)
         {
-            Product? result =
-                await _applicationDbContext.Products.FindAsync(productId);
-
+            var result =
+                 await _applicationDbContext.Products
+                 .Where(current => current.Id == productId)
+                 .Select(current => new ProductDto
+                 {
+                     Id = current.Id,
+                     CategoryId = current.CategoryId,
+                     Count = current.Count,
+                     Description = current.Description,
+                     ImageFileName = current.ImageFileName,
+                     Name = current.Name,
+                     Price = current.Price,
+                 })
+                 .FirstOrDefaultAsync();
             return result;
         }
         #endregion
@@ -106,13 +120,23 @@ namespace ShamsaStoreServer.Services
         #endregion
 
         #region واکشی اطلاعات محصولات بر اساس آیدی دسته بندی
-        public async Task<List<Product>> GetsByCategoryAsync(int categoryId)
+        public async Task<List<ProductDto>> GetsByCategoryAsync(int categoryId)
         {
-            List<Product> products =
-                await _applicationDbContext
+            var products =
+               await _applicationDbContext
                 .Products
-                .Where(product => product.CategoryId == categoryId).ToListAsync();
-
+                 .Where(product => product.CategoryId == categoryId)
+                .Select(current => new ProductDto
+                {
+                    Id = current.Id,
+                    CategoryId = current.CategoryId,
+                    Count = current.Count,
+                    Description = current.Description,
+                    ImageFileName = current.ImageFileName,
+                    Name = current.Name,
+                    Price = current.Price,
+                })
+                .ToListAsync();
             return products;
         }
         #endregion
@@ -129,5 +153,38 @@ namespace ShamsaStoreServer.Services
             await _applicationDbContext.SaveChangesAsync(); 
         }
         #endregion
+
+        public async Task<List<ProductDto>> GetProductsWithOrdering(bool orderbyDescending)
+        {
+            if (orderbyDescending)
+            {
+                return await _applicationDbContext.Products
+                    .OrderByDescending(current => current.Id)
+                    .Select(current => new ProductDto
+                    {
+                        Id = current.Id,
+                        Count = current.Count,
+                        Description = current.Description,
+                        Name = current.Name,
+                        Price = current.Price,
+                        CategoryId = current.CategoryId,
+                        ImageFileName = current.ImageFileName,
+                    })
+                    .ToListAsync();
+            }
+
+            return await _applicationDbContext.Products
+                   .Select(current => new ProductDto
+                   {
+                       Id = current.Id,
+                       Count = current.Count,
+                       Description = current.Description,
+                       Name = current.Name,
+                       Price = current.Price,
+                       CategoryId = current.CategoryId,
+                       ImageFileName = current.ImageFileName,
+                   })
+                   .ToListAsync();
+        }
     }
 }

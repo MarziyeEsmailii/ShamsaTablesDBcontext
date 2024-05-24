@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShamsaStoreServer.Entities;
 using ShamsaStoreServer.Services;
 using ShamsaStoreServer.ViewModels.Product;
+using System;
 using System.Threading.Tasks;
 
 namespace ShamsaStoreServer.Controllers
@@ -12,6 +13,8 @@ namespace ShamsaStoreServer.Controllers
     public class ProductController : ControllerBase
     {
         private readonly ProductService _productService;
+        private object _orderService;
+
         public ProductController(ProductService productService)
         {
             _productService = productService;

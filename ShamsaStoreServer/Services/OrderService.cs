@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ShamsaStoreServer.ViewModels.Cart;
+using ShamsaStoreServer.ViewModels.Product;
 
 namespace ShamsaStoreServer.Services
 {
@@ -256,5 +258,68 @@ namespace ShamsaStoreServer.Services
                 .ToList();
         }
         #endregion
+
+        public async Task<int> GetOrderCount(int userId)
+        {
+            return await _applicationDbContext.Orders
+                .Where(current => current.UserId == userId)
+                .CountAsync();
+        }
+
+        public async Task<List<OrderDto>> GetOrdersWithOrdering(bool orderbyDescending, int userId)
+        {
+            var anyUser =
+               await _applicationDbContext.Orders
+               .Where(current => current.UserId == userId)
+               .AnyAsync();
+
+            if (!anyUser)
+            {
+                return new List<OrderDto>();
+            }
+
+            if (orderbyDescending)
+            {
+                return await _applicationDbContext.Orders
+                    .Include(current => current.Product)
+                    .Where(current => current.UserId == userId)
+                    .OrderByDescending(current => current.Id)
+                    .Select(current => new OrderDto
+                    {
+                        Id = current.Id,
+                        Count = current.Count,
+                        Price = current.Price,
+                        ProductName = current.Product.Name,
+                        ProductId = current.ProductId,
+                        UserId = current.UserId,
+                    })
+                    .ToListAsync();
+            }
+
+            return await _applicationDbContext.Orders
+                   .Include(current => current.Product)
+                   .Where(current => current.UserId == userId)
+                   .Select(current => new OrderDto
+                   {
+                       Id = current.Id,
+                       Count = current.Count,
+                       Price = current.Price,
+                       ProductName = current.Product.Name,
+                       ProductId = current.ProductId,
+                       UserId = current.UserId,
+                   })
+                   .ToListAsync();
+        }
+
+        // تعداد فروخته شده از کالایی که با ایدی فراخوانی کردیم
+        public async Task<int> GetProductOrder(int productId)
+        {
+            return
+                await _applicationDbContext.Orders
+                .Where(current => current.ProductId == productId)
+                .CountAsync();
+        }
+
     }
+
 }

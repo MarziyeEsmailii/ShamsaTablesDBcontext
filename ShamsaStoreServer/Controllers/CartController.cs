@@ -6,6 +6,7 @@ using ShamsaStoreServer.ViewModels.Cart;
 using Shared.Dtos.Search;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ShamsaStoreServer.ViewModels.Product;
 
 namespace ShamsaStoreServer.Controllers
 {
@@ -102,5 +103,18 @@ namespace ShamsaStoreServer.Controllers
                 BadRequest("نام کالا خود را وارد کنید");
         }
         #endregion
+
+        [HttpGet("CartsWithOrdering")]
+        public async Task<IActionResult> CartsWithOrdering([FromQuery] bool orderbyDescending, [FromQuery] int userId)
+        {
+            return Ok(await _cartService.GetCartsWithOrdering(orderbyDescending, userId));
+        }
+
+        // برای فهمیدن که چند عدد سبد خرید برای کاربر وجود داره
+        [HttpGet("CartCount")]
+        public async Task<IActionResult> CartCount([FromQuery] int userId)
+        {
+            return Ok(await _cartService.GetCartCount(userId));
+        }
     }
 }
