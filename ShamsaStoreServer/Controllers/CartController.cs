@@ -24,7 +24,13 @@ namespace ShamsaStoreServer.Controllers
             _productService = productService;
         }
 
+        #region ایجاد یک سبد خرید
         [HttpPost]
+        /// <summary>
+        /// ایجاد یک سبد خرید با استفاده از اطلاعات ارائه شده در مدل.
+        /// </summary>
+        /// <param name="viewModel">مدل شامل اطلاعات محصول و تعداد مورد نیاز.</param>
+        /// <returns>یک پاسخ HTTP که نشان می‌دهد عملیات موفقیت آمیز بوده یا خیر.</returns>
         public async Task<IActionResult> Create([FromBody] CartDto viewModel)
         {
             var product =
@@ -40,7 +46,9 @@ namespace ShamsaStoreServer.Controllers
 
             return Ok();
         }
+        #endregion
 
+        #region ویرایش تعداد کالا در سبد خرید
         [HttpPut]
         public async Task<IActionResult> Edit([FromBody] CartDto viewModel)
         {
@@ -57,8 +65,9 @@ namespace ShamsaStoreServer.Controllers
 
             return Ok();
         }
+        #endregion
 
-
+        #region واکشی اطلاعات سبد خرید بر اساس آیدی کاربر
         [HttpGet("{userId}")]
         public async Task<IActionResult> Gets(int userId)
         {
@@ -67,7 +76,9 @@ namespace ShamsaStoreServer.Controllers
 
             return Ok(carts);
         }
+        #endregion
 
+        #region حذف یا لغو کردن سبد خرید
         [HttpDelete("DeleteCart")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -75,8 +86,11 @@ namespace ShamsaStoreServer.Controllers
 
             return Ok();
         }
+        #endregion
 
+        #region جست و جو در سبد خرید
         [HttpPost("Search")]
+
         public async Task<IActionResult> Search([FromBody]SearchDto model)
         {
             return
@@ -87,5 +101,6 @@ namespace ShamsaStoreServer.Controllers
                 :
                 BadRequest("نام کالا خود را وارد کنید");
         }
+        #endregion
     }
 }

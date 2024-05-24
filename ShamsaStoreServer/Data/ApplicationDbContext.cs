@@ -54,6 +54,7 @@ namespace ShamsaStoreServer.Data
                      FullName = "YOUR_FULL_NAME"
                  });
 
+            //تعریف رابطه بین کاربر و نقش در سیستم احراز هویت
             builder.Entity<IdentityUserRole<string>>().HasData(
                 new IdentityUserRole<string>
                 {

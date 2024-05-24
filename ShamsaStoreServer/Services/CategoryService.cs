@@ -18,6 +18,7 @@ namespace ShamsaStoreServer.Services
             _applicationDbContext = applicationDbContext;
         }
 
+        #region واکشی اطلاعات دسته بندی محصولات با توجه به آیدی
         public async Task<Category?> GetAsync(int id)
         {
             Category? result =
@@ -26,6 +27,9 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
+        #endregion
+
+        #region واکشی کلی جدول دسته بندی
         public async Task<List<Category>> GetsAsync()
         {
             List<Category> categories =
@@ -34,7 +38,9 @@ namespace ShamsaStoreServer.Services
 
             return categories;
         }
+        #endregion
 
+        #region اضافه کردن داده به جدول دسته بندی با توحه به اطلاعات مدل دریافتی
         public async Task AddAsync(CategoryDto model)
         {
             if (model is null)
@@ -43,16 +49,18 @@ namespace ShamsaStoreServer.Services
             Category category = new Category();
 
             category.Name = model.Name;
-
             category.ImageFileName = model.ImageFileName;
 
             _applicationDbContext.Categories.Add(category);
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region ویرایش جدول دسته بندی
         public async Task EditAsync( CategoryDto model)
         {
+            //چک کردن خالی نبودن مدل ارسالی
             if (model is null)
                 throw new Exception("موارد ارسال شده نادرست است");
 
@@ -63,14 +71,14 @@ namespace ShamsaStoreServer.Services
                 throw new Exception("دسته بندی یافت نشد");
 
             oldCategory.Name = model.Name;
-
             oldCategory.ImageFileName = model.ImageFileName;
 
             _applicationDbContext.Categories.Update(oldCategory);
-
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region حذف دسته بندی با استفاده از آیدی
         public async Task DeleteAsync(int id)
         {
             Category? category =
@@ -83,5 +91,6 @@ namespace ShamsaStoreServer.Services
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
     }
 }

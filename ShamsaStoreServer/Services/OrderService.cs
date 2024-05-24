@@ -29,6 +29,8 @@ namespace ShamsaStoreServer.Services
             _productService = productService;
         }
 
+
+        #region ایجاد سفارش جدید بر اساس مدل دریافتی
         public async Task CreateAsync(OrderDto model)
         {
             if (model is null)
@@ -37,18 +39,17 @@ namespace ShamsaStoreServer.Services
             Order order = new Order();
 
             order.ProductId = model.ProductId;
-
             order.UserId = model.UserId;
-
-            order.Price *= model.Count;
-
+            order.Price = model.Price;
             order.Count = model.Count;
 
             await _applicationDbContext.Orders.AddAsync(order);
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region ویرایش  جدول سفارشات بر اساس مدل دریافتی
         public async Task EditAsync(OrderDto model)
         {
             if (model is null)
@@ -61,18 +62,17 @@ namespace ShamsaStoreServer.Services
                 throw new Exception("سفارشی یافت نشد");
 
             order.Price = model.Price;
-
             order.ProductId = model.ProductId;
-
             order.UserId = model.UserId;
-
             order.Count = model.Count;
 
             _applicationDbContext.Orders.Update(order);
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region حذف یا همان لغو سفارش بر اساس آیدی
         public async Task DeleteAsync(int orderId)
         {
             if (orderId < 0)
@@ -88,7 +88,9 @@ namespace ShamsaStoreServer.Services
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region واکشی اطلاعات یک سفارش خاص بر اساس آیدی
         public Order? Get(int orderId)
         {
             if (orderId < 0)
@@ -99,7 +101,9 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
+        #endregion
 
+        #region واکشی یک سفارش خاص به صورت غیر هم زمان
         public async Task<Order?> GetAsync(int orderId)
         {
             if (orderId < 0)
@@ -110,7 +114,9 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
+        #endregion
 
+        #region واکشی لیست سفارشات 
         public async Task<List<Order>> GetsAsync()
         {
             List<Order> result =
@@ -118,7 +124,9 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
+        #endregion
 
+        #region واکشی سفارشات ثبت شده بر اساس آیدی محصول
         public async Task<Order?> GetByProductIdAsync(int productId)
         {
             return
@@ -126,7 +134,9 @@ namespace ShamsaStoreServer.Services
                 .Where(x => x.ProductId == productId)
                 .FirstOrDefaultAsync();
         }
+        #endregion
 
+        #region واکشی اطلاعات سفارش کاربران
         public async Task<Order?> GetByUserIdAsync(int userId)
         {
             return
@@ -134,7 +144,9 @@ namespace ShamsaStoreServer.Services
                 .Where(x => x.UserId == userId)
                 .FirstOrDefaultAsync();
         }
+        #endregion
 
+        #region ثبت سفارش جدید و بروز رسانی تعداد موجودی ها
         public async Task<bool> AddRangeAsync(List<OrderDto> models)
         {
             var orders =
@@ -170,13 +182,16 @@ namespace ShamsaStoreServer.Services
                 await _cartService.RemoveByProductId(item.ProductId);
             }
 
+            //چک کردن موفقیت آمیز بودن عملیات
             var affectedRow =
                  await _applicationDbContext.SaveChangesAsync();
 
             return affectedRow > 0 ? true : false;
         }
+        #endregion
 
 
+        #region جست و جو در سفارشات بر اساس آیدی کاربر و نام محصول
         public async Task<List<OrderDto>> GetsWithSearchAsync(SearchDto model)
         {
             return await _applicationDbContext.Orders
@@ -185,7 +200,7 @@ namespace ShamsaStoreServer.Services
                 .Where(current=>current.UserId == model.UserId)
                 .Select(current => new OrderDto
                 {
-                    Id = current.ProductId,
+                    Id = current.Id,
                     Count = current.Count,
                     ProductName = current.Product.Name,
                     Price = current.Price,
@@ -194,9 +209,13 @@ namespace ShamsaStoreServer.Services
                 })
                 .ToListAsync();
         }
+        #endregion
 
+
+        #region گزارشی از سفارش ها که براساس محصول گروه بندی وبراساس محدوده تاریخ فیلتر شده اند
         public async Task<List<OrderReportResponseDto>> OrdersReportByProductAsync(OrderReportRequestDto model)
         {
+            //لیست برای نگه داری داده های گزارش نهایی
             var orderReports =
                 new List<OrderReportResponseDto>();
 
@@ -212,6 +231,7 @@ namespace ShamsaStoreServer.Services
                  })
                  .ToList();
 
+            //واکشی اطلاعات محصولات
             foreach (var order in ordersByGroupBy)
             {
                 var orderReport =
@@ -230,12 +250,11 @@ namespace ShamsaStoreServer.Services
                     orderReports.Add(orderReport);
             }
 
-
             return orderReports
                 .Skip((model.PageNo - 1) * model.PageSize)
                 .Take(model.PageSize)
                 .ToList();
         }
-
+        #endregion
     }
 }

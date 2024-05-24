@@ -20,6 +20,7 @@ namespace ShamsaStoreServer.Services
             _applicationDbContext = applicationDbContext;
         }
 
+        #region اضافه کردن رکورد جدید به جدول محصولات
         public async Task AddAsync(ProductDto model)
         {
             if (model is null)
@@ -28,22 +29,19 @@ namespace ShamsaStoreServer.Services
             Product product = new Product();
 
             product.Name = model.Name;
-
             product.Description = model.Description;
-
             product.Price = model.Price;
-
             product.Count = model.Count;
-
             product.CategoryId = model.CategoryId;
-
             product.CreatedDateTime = DateTime.Now;
 
             await _applicationDbContext.Products.AddAsync(product);
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region ویرایش اطلاعات محصولات بر اساس مدل دریافتی
         public async Task UpdateAsync(ProductDto model)
         {
             Product? oldProduct =
@@ -53,22 +51,19 @@ namespace ShamsaStoreServer.Services
                 throw new Exception("محصولی یافت نشد");
 
             oldProduct.Price = model.Price;
-
             oldProduct.Name = model.Name;
-
             oldProduct.Description = model.Description;
-
             oldProduct.ImageFileName = model.ImageFileName;
-
             oldProduct.Count = model.Count;
-
             oldProduct.CategoryId = model.CategoryId;
 
             _applicationDbContext.Products.Update(oldProduct);
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region حذف یک محصول خاص با توجه به آیدی
         public async Task DeleteAsync(int productId)
         {
             Product product =
@@ -78,7 +73,9 @@ namespace ShamsaStoreServer.Services
 
             await _applicationDbContext.SaveChangesAsync();
         }
+        #endregion
 
+        #region واکشی اطلاعات یک محصول خاص با توجه به آیدی
         public Product? Get(int id)
         {
             Product? product =
@@ -86,7 +83,9 @@ namespace ShamsaStoreServer.Services
 
             return product;
         }
+        #endregion
 
+        #region واکشی اطلاعات غیر هم زمان یک محصول خاص با توجه به آیدی
         public async Task<Product?> GetAsync(int productId)
         {
             Product? result =
@@ -94,7 +93,9 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
+        #endregion
 
+        #region واکشی کلی لیست محصولات
         public async Task<List<Product>> GetsAsync()
         {
             List<Product> products =
@@ -102,7 +103,9 @@ namespace ShamsaStoreServer.Services
 
             return products;
         }
+        #endregion
 
+        #region واکشی اطلاعات محصولات بر اساس آیدی دسته بندی
         public async Task<List<Product>> GetsByCategoryAsync(int categoryId)
         {
             List<Product> products =
@@ -112,7 +115,9 @@ namespace ShamsaStoreServer.Services
 
             return products;
         }
+        #endregion
 
+        #region تعداد موجودی محصول را به میزان درخواستی کاهش می دهد
         public async Task SubtractCountAsync(int productId, int count)
         {
             var product =
@@ -121,6 +126,8 @@ namespace ShamsaStoreServer.Services
             product.Count -= count;
 
             _applicationDbContext.Update(product);
+            await _applicationDbContext.SaveChangesAsync(); 
         }
+        #endregion
     }
 }
