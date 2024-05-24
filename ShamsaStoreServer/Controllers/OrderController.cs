@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using ShamsaStoreServer.Entities;
 using ShamsaStoreServer.Services;
 using ShamsaStoreServer.ViewModels.Order;
+using Shared.Dtos.Order;
+using Shared.Dtos.Search;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -57,6 +61,7 @@ namespace ShamsaStoreServer.Controllers
 
             return Ok();
         }
+
         [HttpPost("AddRange")]
         public async Task<IActionResult> AddRange(List<OrderDto> orders)
         {
@@ -72,6 +77,18 @@ namespace ShamsaStoreServer.Controllers
                 await _orderService.OrdersReportByProductAsync(viewModel);
 
             return Ok(result);
+        }
+
+        [HttpPost("Search")]
+        public async Task<IActionResult> Search([FromBody] SearchDto model)
+        {
+            return
+                model.Search 
+                != 
+                null ? 
+                Ok(await _orderService.GetsWithSearchAsync(model)) 
+                :
+                BadRequest("نام کالا خود را وارد کنید");
         }
     }
 }

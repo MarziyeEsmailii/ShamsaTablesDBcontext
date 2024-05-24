@@ -1,7 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ShamsaStoreServer.Data;
 using ShamsaStoreServer.Entities;
 using ShamsaStoreServer.ViewModels.Order;
+using Shared.Dtos.Order;
+using Shared.Dtos.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,12 +16,19 @@ namespace ShamsaStoreServer.Services
     {
         private readonly ApplicationDbContext _applicationDbContext;
 
-        public OrderService(ApplicationDbContext applicationDbContext)
+        private readonly CartService _cartService;
+
+        private readonly ProductService _productService;
+
+        public OrderService(ApplicationDbContext applicationDbContext, CartService cartService, ProductService productService)
         {
             _applicationDbContext = applicationDbContext;
+
+            _cartService = cartService;
+
+            _productService = productService;
         }
 
-        #region سفارش جدید را بر اساس مدل دریافتی ایجاد می‌کند
         public async Task CreateAsync(OrderDto model)
         {
             if (model is null)
@@ -27,17 +37,18 @@ namespace ShamsaStoreServer.Services
             Order order = new Order();
 
             order.ProductId = model.ProductId;
+
             order.UserId = model.UserId;
-            order.Price = model.Price;
+
+            order.Price *= model.Count;
+
             order.Count = model.Count;
 
             await _applicationDbContext.Orders.AddAsync(order);
 
             await _applicationDbContext.SaveChangesAsync();
         }
-        #endregion
 
-        #region ویرایش جدول بر اساس اطلاعات دریافتی از مدل
         public async Task EditAsync(OrderDto model)
         {
             if (model is null)
@@ -50,17 +61,18 @@ namespace ShamsaStoreServer.Services
                 throw new Exception("سفارشی یافت نشد");
 
             order.Price = model.Price;
+
             order.ProductId = model.ProductId;
+
             order.UserId = model.UserId;
+
             order.Count = model.Count;
 
             _applicationDbContext.Orders.Update(order);
 
             await _applicationDbContext.SaveChangesAsync();
         }
-        #endregion
 
-        #region حذف رکورد بر اساس آیدی
         public async Task DeleteAsync(int orderId)
         {
             if (orderId < 0)
@@ -76,9 +88,7 @@ namespace ShamsaStoreServer.Services
 
             await _applicationDbContext.SaveChangesAsync();
         }
-        #endregion
 
-        #region  واکشی اطلاعات سافرش بر اساس آیدی
         public Order? Get(int orderId)
         {
             if (orderId < 0)
@@ -89,9 +99,7 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
-        #endregion
 
-        #region واکشی اطلاعات کل جدول بر اساس آیدی
         public async Task<Order?> GetAsync(int orderId)
         {
             if (orderId < 0)
@@ -102,9 +110,7 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
-        #endregion
 
-        #region واکشی کل جدول سفارشات
         public async Task<List<Order>> GetsAsync()
         {
             List<Order> result =
@@ -112,9 +118,7 @@ namespace ShamsaStoreServer.Services
 
             return result;
         }
-        #endregion
 
-        #region واکشی اطلاعات جدول سفارشات بر اساس آیدی محصول
         public async Task<Order?> GetByProductIdAsync(int productId)
         {
             return
@@ -122,9 +126,7 @@ namespace ShamsaStoreServer.Services
                 .Where(x => x.ProductId == productId)
                 .FirstOrDefaultAsync();
         }
-        #endregion
 
-        #region واکشی اطلاعات جدول سفارشات بر اساس آیدی کاربر
         public async Task<Order?> GetByUserIdAsync(int userId)
         {
             return
@@ -132,57 +134,108 @@ namespace ShamsaStoreServer.Services
                 .Where(x => x.UserId == userId)
                 .FirstOrDefaultAsync();
         }
-        #endregion
 
-        public async Task AddRangeAsync(List<OrderDto> models)
+        public async Task<bool> AddRangeAsync(List<OrderDto> models)
         {
             var orders =
                 models.Select(current => new Order
                 {
                     ProductId = current.ProductId,
                     Count = current.Count,
-                    Price = current.Price,
+                    Price = current.Price * current.Count,
                     DateTimeCreated = DateTime.Now,
                     UserId = current.UserId,
                 })
                 .ToList();
 
+            foreach (var item in orders)
+            {
+                var result = await _applicationDbContext.Products
+                    .Where(current => current.Count >= item.Count)
+                    .Select(current=>current.Count)
+                    .FirstOrDefaultAsync();
+
+                if (result < item.Count)
+                {
+                    return false;
+                }
+            }
+
             await _applicationDbContext.AddRangeAsync(orders);
 
-            await _applicationDbContext.SaveChangesAsync();
+            foreach (var item in orders)
+            {
+                await _productService.SubtractCountAsync(item.ProductId, item.Count);
+
+                await _cartService.RemoveByProductId(item.ProductId);
+            }
+
+            var affectedRow =
+                 await _applicationDbContext.SaveChangesAsync();
+
+            return affectedRow > 0 ? true : false;
+        }
+
+
+        public async Task<List<OrderDto>> GetsWithSearchAsync(SearchDto model)
+        {
+            return await _applicationDbContext.Orders
+                .Include(current => current.Product)
+                .Where(current => current.Product.Name.Contains(model.Search))
+                .Where(current=>current.UserId == model.UserId)
+                .Select(current => new OrderDto
+                {
+                    Id = current.ProductId,
+                    Count = current.Count,
+                    ProductName = current.Product.Name,
+                    Price = current.Price,
+                    ProductId = current.ProductId,
+                    UserId = current.UserId,
+                })
+                .ToListAsync();
         }
 
         public async Task<List<OrderReportResponseDto>> OrdersReportByProductAsync(OrderReportRequestDto model)
         {
-            var ordersQuery =
-                 _applicationDbContext.Orders
-                .Where(current => model == null || current.DateTimeCreated >= model.FromDate)
-                .Where(current => model == null || current.DateTimeCreated <= model.ToDate)
-                .GroupBy(current => current.ProductId)
-                .Select(current => new
-                {
-                    ProductId = current.Key,
-                    TotalSum = current.Sum(current => current.Price),
-                });
+            var orderReports =
+                new List<OrderReportResponseDto>();
 
-            var productsQuery = from product in _applicationDbContext.Products
-                                from order in ordersQuery.Where(a => a.ProductId == product.Id).DefaultIfEmpty()
-                                select new OrderReportResponseDto
-                                {
-                                    ProductName = product.Name,
-                                    ProductCategoryName = product.Category.Name,
-                                    ProductId = product.Id,
-                                    TotalSum = (int?)order.TotalSum
-                                };
+            var ordersByGroupBy =
+                  _applicationDbContext.Orders
+                 .Where(current => current.DateTimeCreated >= model.FromDate)
+                 .Where(current => current.DateTimeCreated <= model.ToDate)
+                 .GroupBy(current => current.ProductId)
+                 .Select(current => new
+                 {
+                     ProductId = current.Key,
+                     TotalSum = current.Sum(current => current.Price),
+                 })
+                 .ToList();
 
-            productsQuery =
-                productsQuery
-                .Skip(model.PageNo * model.PageSize)
-                .Take(model.PageSize);
+            foreach (var order in ordersByGroupBy)
+            {
+                var orderReport =
+                    await _applicationDbContext.Products
+                    .Where(current => current.Id == order.ProductId)
+                    .Select(current => new OrderReportResponseDto
+                    {
+                        TotalSum = order.TotalSum,
+                        ProductCategoryName = current.Category.Name,
+                        ProductId = current.Id,
+                        ProductName = current.Name,
+                    })
+                    .FirstOrDefaultAsync();
 
-            var result = await productsQuery.ToListAsync();
+                if (orderReport is not null)
+                    orderReports.Add(orderReport);
+            }
 
-            return result;
+
+            return orderReports
+                .Skip((model.PageNo - 1) * model.PageSize)
+                .Take(model.PageSize)
+                .ToList();
         }
+
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using ShamsaStoreServer.Entities;
 using ShamsaStoreServer.Services;
 using ShamsaStoreServer.ViewModels.Cart;
+using Shared.Dtos.Search;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,12 +16,8 @@ namespace ShamsaStoreServer.Controllers
         private readonly CartService _cartService;
 
         private readonly ProductService _productService;
-        /// <summary>
-        /// متد سازنده کلاس سبد خرید
-        /// </summary>
-        /// <param name="cartService"></param>
-        /// <param name="productService"></param>
-        public CartController(CartService cartService,ProductService productService)
+
+        public CartController(CartService cartService, ProductService productService)
         {
             _cartService = cartService;
 
@@ -28,14 +25,9 @@ namespace ShamsaStoreServer.Controllers
         }
 
         [HttpPost]
-        /// <summary>
-        /// ایجاد یک سبد خرید جدید با توجه به جزئیات ارائه شده در DTO.
-        /// </summary>
-        /// <param name="viewModel">DTO شامل اطلاعات محصول و تعداد مورد نیاز.</param>
-        /// <returns>IActionResult: نتیجه عملیات ایجاد سبد خرید.</returns>
         public async Task<IActionResult> Create([FromBody] CartDto viewModel)
         {
-            var product = 
+            var product =
                 await _productService.GetAsync(viewModel.ProductId);
 
             if (product is null)
@@ -82,6 +74,18 @@ namespace ShamsaStoreServer.Controllers
             await _cartService.DeleteAsync(id);
 
             return Ok();
+        }
+
+        [HttpPost("Search")]
+        public async Task<IActionResult> Search([FromBody]SearchDto model)
+        {
+            return
+                model.Search
+                !=
+                null ?
+                Ok(await _cartService.GetsWithSearchAsync(model))
+                :
+                BadRequest("نام کالا خود را وارد کنید");
         }
     }
 }

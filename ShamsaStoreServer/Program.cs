@@ -5,14 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using ShamsaStoreServer.Data;
 using ShamsaStoreServer.Services;
-using Microsoft.AspNetCore.Identity;
 using ShamsaStoreServer.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace ShamsaStoreServer
 {
     public class Program
     {
-
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +31,8 @@ namespace ShamsaStoreServer
                 (options => options
                 .UseSqlServer(builder.Configuration.GetConnectionString("WebApiDatabase")));
 
+            
+
             builder.Services.AddIdentityApiEndpoints<AuthenctiationUser>(options =>
             {
                 options.Password.RequireNonAlphanumeric = false;
@@ -46,7 +47,7 @@ namespace ShamsaStoreServer
 
             })
                .AddRoles<IdentityRole>()
-                 .AddEntityFrameworkStores<ApplicationDbContext>();
+               .AddEntityFrameworkStores<ApplicationDbContext>();
 
             builder.Services.AddScoped<ProductService>();
 
@@ -59,6 +60,8 @@ namespace ShamsaStoreServer
             builder.Services.AddScoped<CartService>();
 
             builder.Services.AddScoped<CartService>();
+
+
 
             builder.Services.AddCors(options =>
             {

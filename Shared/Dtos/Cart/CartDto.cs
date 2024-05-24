@@ -15,5 +15,7 @@ namespace ShamsaStoreServer.ViewModels.Cart
         public int UserId { get; set; }
 
         public int Count { get; set; }
+
+        public string ProductName { get; set; }
     }
 }
